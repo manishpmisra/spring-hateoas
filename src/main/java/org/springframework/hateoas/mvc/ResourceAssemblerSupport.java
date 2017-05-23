@@ -23,6 +23,7 @@ import java.util.List;
 import org.springframework.beans.BeanUtils;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Resources;
 import org.springframework.util.Assert;
 
 /**
@@ -31,7 +32,8 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-public abstract class ResourceAssemblerSupport<T, D extends ResourceSupport> implements ResourceAssembler<T, D> {
+public abstract class ResourceAssemblerSupport<T, D extends ResourceSupport>
+	implements ResourceAssembler<T, D> {
 
 	private final Class<?> controllerClass;
 	private final Class<D> resourceType;
@@ -58,7 +60,7 @@ public abstract class ResourceAssemblerSupport<T, D extends ResourceSupport> imp
 	 * @param entities must not be {@literal null}.
 	 * @return
 	 */
-	public List<D> toResources(Iterable<? extends T> entities) {
+	public Resources<D> toResources(Iterable<? extends T> entities) {
 
 		Assert.notNull(entities, "Entities must not be null!");
 		List<D> result = new ArrayList<D>();
@@ -67,7 +69,7 @@ public abstract class ResourceAssemblerSupport<T, D extends ResourceSupport> imp
 			result.add(toResource(entity));
 		}
 
-		return result;
+		return new Resources<D>(result);
 	}
 
 	/**

@@ -23,10 +23,18 @@ package org.springframework.hateoas;
 public interface ResourceAssembler<T, D extends ResourceSupport> {
 
 	/**
-	 * Converts the given entity into an {@link ResourceSupport}.
+	 * Converts the given entity into a {@code D}, which extends {@link ResourceSupport}.
 	 * 
 	 * @param entity
 	 * @return
 	 */
 	D toResource(T entity);
+
+	/**
+	 * Converts all given entities into resources and wraps the collection as a resource as well.
+	 *
+	 * @param entities must not be {@literal null}.
+	 * @return {@link Resources} containing {@code D}.
+	 */
+	Resources<D> toResources(Iterable<? extends T> entities);
 }
