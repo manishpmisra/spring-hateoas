@@ -18,7 +18,9 @@ package org.springframework.hateoas.client;
 import static net.jadler.Jadler.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
+import static org.springframework.hateoas.client.HeaderUtils.header;
 import static org.springframework.hateoas.client.Hop.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 
 import java.io.IOException;
 import java.net.URI;
@@ -379,6 +381,41 @@ public class TraversonTest {
 		assertThat(itemResource.getRequiredLink("self").expand().getHref())
 				.isEqualTo(server.rootResource() + "/springagram/items");
 	}
+
+	@Test
+	public void customHeaders() {
+
+		traverson
+			.follow(rel("movies", header("X-CustomHeader", "alpha").header("X-OtherHeader", "delta").build()))
+			.follow(rel("movie", header("X-CustomHeader", "bravo").build()))
+			.follow(rel("actor", header("X-CustomHeader", "charlie").build()))
+			.toObject("$.name");
+
+		verifyThatRequest() //
+			.havingPathEqualTo("/") //
+			.havingHeader(HttpHeaders.ACCEPT, contains(MediaTypes.HAL_JSON_UTF8_VALUE + ", " + MediaTypes.HAL_JSON_VALUE)) //
+			.receivedOnce();
+
+		verifyThatRequest()
+			.havingPathEqualTo("/movies") // aggregate root movies
+			.havingHeader(HttpHeaders.ACCEPT, contains(MediaTypes.HAL_JSON_UTF8_VALUE + ", " + MediaTypes.HAL_JSON_VALUE)) //
+			.havingHeader("X-CustomHeader", contains("alpha")) //
+			.havingHeader("X-OtherHeader", contains("delta")) //
+			.receivedOnce();
+
+		verifyThatRequest()
+			.havingPath(startsWith("/movies/")) // single movie
+			.havingHeader(HttpHeaders.ACCEPT, contains(MediaTypes.HAL_JSON_UTF8_VALUE + ", " + MediaTypes.HAL_JSON_VALUE)) //
+			.havingHeader("X-CustomHeader", contains("bravo")) //
+			.receivedOnce();
+
+		verifyThatRequest()
+			.havingPath(startsWith("/actors/")) // single actor
+			.havingHeader(HttpHeaders.ACCEPT, contains(MediaTypes.HAL_JSON_UTF8_VALUE + ", " + MediaTypes.HAL_JSON_VALUE)) //
+			.havingHeader("X-CustomHeader", contains("charlie")) //
+			.receivedOnce();
+	}
+
 
 	private void setUpActors() {
 

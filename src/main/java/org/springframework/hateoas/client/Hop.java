@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 
 /**
@@ -50,6 +51,11 @@ public class Hop {
 	private final @Wither Map<String, Object> parameters;
 
 	/**
+	 * Extra headers to apply on this hop.
+	 */
+	private final HttpHeaders extraHeaders;
+
+	/**
 	 * Creates a new {@link Hop} for the given relation name.
 	 * 
 	 * @param rel must not be {@literal null} or empty.
@@ -59,7 +65,15 @@ public class Hop {
 
 		Assert.hasText(rel, "Relation must not be null or empty!");
 
-		return new Hop(rel, Collections.<String, Object> emptyMap());
+		return new Hop(rel, Collections.emptyMap(), HttpHeaders.EMPTY);
+	}
+
+	public static Hop rel(String rel, HttpHeaders extraHeaders) {
+
+		Assert.hasText(rel, "Relation must not be null or empty!");
+		Assert.notNull(extraHeaders, "ExtraHeaders must not be null!");
+
+		return new Hop(rel, Collections.emptyMap(), extraHeaders);
 	}
 
 	/**
@@ -76,7 +90,7 @@ public class Hop {
 		HashMap<String, Object> parameters = new HashMap<String, Object>(this.parameters);
 		parameters.put(name, value);
 
-		return new Hop(rel, parameters);
+		return new Hop(rel, parameters, HttpHeaders.EMPTY);
 	}
 
 	/**
